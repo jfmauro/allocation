@@ -1,0 +1,1 @@
+Save this approved plan to .opencode/plans/architecture-plan.md
