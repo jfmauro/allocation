@@ -1,14 +1,10 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "default_agent": "plan",
+  "default_agent": "orchestrator",
   "model": "openai/fait-gpt-5.4-custom",
   "small_model": "openai/fait-routing-gpt-5.4-nano",
-  "enabled_providers": [
-    "openai"
-  ],
-  "instructions": [
-    "DESIGN.md"
-  ],
+  "enabled_providers": ["openai"],
+  "instructions": ["DESIGN.md"],
   "permission": {
     "bash": "ask",
     "edit": "ask",
@@ -21,174 +17,17 @@
     "skill": "allow"
   },
   "agent": {
-    "plan": {
-      "mode": "primary",
-      "model": "openai/fait-gpt-5.5",
-      "permission": {
-        "edit": "deny",
-        "bash": "deny",
-        "write": "deny",
-        "task": "allow",
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "list": "allow",
-        "skill": "allow"
-      }
-    },
-    "build": {
-      "mode": "primary",
-      "model": "openai/fait-gpt-5.5",
-      "permission": {
-        "edit": "allow",
-        "bash": "ask",
-        "write": "allow",
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "list": "allow",
-        "task": "allow",
-        "skill": "allow"
-      }
-    },
-    "orchestrator": {
-      "mode": "primary",
-      "model": "openai/fait-gpt-5.5",
-      "permission": {
-        "edit": "ask",
-        "bash": "ask",
-        "write": "ask",
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "list": "allow",
-        "task": "allow",
-        "skill": "allow"
-      }
-    },
-    "code-reviewer": {
-      "mode": "subagent",
-      "model": "openai/fait-gpt-5.3-codex",
-      "permission": {
-        "edit": "deny",
-        "bash": "deny",
-        "write": "deny",
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "list": "allow",
-        "skill": "allow"
-      }
-    },
-    "spec-reviewer": {
-      "mode": "subagent",
-      "model": "openai/fait-gpt-5.4-custom",
-      "permission": {
-        "edit": "deny",
-        "bash": "deny",
-        "write": "deny",
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "list": "allow",
-        "skill": "allow"
-      }
-    },
-    "domain-engineer": {
-      "mode": "subagent",
-      "model": "openai/fait-gpt-5.k2.6-custom",
-      "permission": {
-        "edit": "ask",
-        "bash": "deny",
-        "write": "ask",
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "list": "allow",
-        "skill": "allow"
-      }
-    },
-    "persistence-engineer": {
-      "mode": "subagent",
-      "model": "openai/fait-gpt-5.k2.6-custom",
-      "permission": {
-        "edit": "ask",
-        "bash": "ask",
-        "write": "ask",
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "list": "allow",
-        "skill": "allow"
-      }
-    },
-    "frontend-engineer": {
-      "mode": "subagent",
-      "model": "openai/fait-gpt-5.4-codex",
-      "permission": {
-        "edit": "allow",
-        "bash": "ask",
-        "write": "allow",
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "list": "allow",
-        "skill": "allow"
-      }
-    },
-    "web-engineer": {
-      "mode": "subagent",
-      "model": "openai/fait-gpt-5.4-codex",
-      "permission": {
-        "edit": "allow",
-        "bash": "ask",
-        "write": "allow",
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "list": "allow",
-        "skill": "allow"
-      }
-    },
-    "test-engineer": {
-      "mode": "subagent",
-      "model": "openai/fait-gpt-5.2",
-      "permission": {
-        "edit": "allow",
-        "bash": "ask",
-        "write": "allow",
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "list": "allow",
-        "skill": "allow"
-      }
-    },
-    "explore": {
-      "mode": "subagent",
-      "model": "openai/fait-routing-gpt-5.4-nano",
-      "permission": {
-        "edit": "deny",
-        "bash": "deny",
-        "write": "deny",
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "list": "allow"
-      }
-    },
-    "scout": {
-      "mode": "subagent",
-      "model": "openai/fait-gpt-5.4-nano",
-      "permission": {
-        "edit": "deny",
-        "bash": "deny",
-        "write": "deny",
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "list": "allow"
-      }
-    }
+    "orchestrator": { "model": "openai/fait-gpt-5.4-Custom" },
+    "technical-functional-analyst": { "model": "openai/fait-gpt-5.4-Custom" },
+    "sad-architect-reviewer": { "model": "openai/fait-gpt-5.4-Custom" },
+    "planner": { "model": "openai/fait-gpt-5.4-Custom" },
+    "domain-engineer": { "model": "openai/fait-gpt-5.k2.6-custom" },
+    "persistence-engineer": { "model": "openai/fait-gpt-5.k2.6-custom" },
+    "web-engineer": { "model": "openai/fait-gpt-5.k2.6-custom" },
+    "frontend-engineer": { "model": "openai/fait-gpt-5.k2.6-custom" },
+    "test-engineer": { "model": "openai/fait-gpt-5.k2.6-custom" },
+    "spec-reviewer": { "model": "openai/fait-gpt-5.4-custom" },
+    "code-reviewer": { "model": "openai/fait-gpt-5.k2.6-custom" },
+    "documentation-engineer": { "model": "openai/fait-gpt-5.4-custom" }
   }
 }

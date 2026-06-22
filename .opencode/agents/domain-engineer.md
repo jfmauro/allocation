@@ -12,7 +12,7 @@ permission:
   edit: allow
   bash: ask
   skill:
-    "hexagonal-architecture": allow
+    "spring-boot-hexagonal-architecture": allow
     "tdd": allow
     "java-springboot": allow
 ---
@@ -24,57 +24,42 @@ with zero framework leakage.
 ## Scope
 
 You handle two modules:
-- **domain**: pure business logic, entities, value objects, ports. No framework imports.
-- **application**: pure orchestration, delegates to domain objects and outbound ports.
+- domain: pure business logic, entities, value objects, ports. No framework imports.
+- application: pure orchestration, delegates to domain objects and outbound ports.
 - Write operations requiring transactions use adapter-out transactional workers via outbound ports (never @Transactional in application).
 
 ## Mandatory constraints
 
-- Java 21 features: records, sealed classes, pattern matching where appropriate
-- Domain module: ZERO imports from Spring, JPA, Hibernate, web, or messaging
-- Application module: depends on domain only
-- Constructor injection only; never field injection
-- Every public method: log once at start, once at end; each message starts with +++ and ends with +++
-- SLF4J for logging
-- Lombok and MapStruct are allowed
-- All code, comments, and text in English
+- Java 21 features: records, sealed classes, pattern matching where appropriate.
+- Domain module: ZERO imports from Spring, JPA, Hibernate, web, or messaging.
+- Application module: depends on domain only.
+- Constructor injection only; never field injection.
+- Every public method: log once at start, once at end; each message starts with `+++` and ends with `+++`.
+- SLF4J for logging.
+- Lombok and MapStruct are allowed.
+- All code, comments, and text in English.
 
 ## TDD workflow (vertical slices)
 
 For each class:
-1. Write the JUnit5 test first (RED) — test one behavior
-2. Implement just enough code to pass (GREEN)
-3. Refactor if needed
-4. Repeat for next behavior
+1. Write the JUnit5 test first (RED) -- test one behavior.
+2. Implement just enough code to pass (GREEN).
+3. Refactor if needed.
+4. Repeat for next behavior.
 
 Never write all tests first then all implementation.
 
 ## Domain model guidelines
 
-- Domain objects are rich: business logic lives in the entity, not in services
-- Factory methods with guard clauses for creation (validate all invariants)
-- Use UUID for identifiers
-- Include a version field (plain long) for optimistic locking awareness
-- Status transitions must be explicit and validated (e.g. only CONFIRMED → CANCELLED)
-- Throw domain-specific exceptions for invariant violations
-
-## Port interfaces
-
-- Inbound ports (use cases): define what the application can do
-- Outbound ports (repositories): define what the domain needs from infrastructure
-- Ports are plain Java interfaces in domain.port.in / domain.port.out packages
-- No framework annotations on port interfaces
-
-## Application services
-
-- Each service implements one or more inbound ports
-- Services are stateless thin orchestrators
-- Delegate business decisions to domain objects
-- Handle retry logic for optimistic lock exceptions (up to 3 retries)
+- Domain objects are rich: business logic lives in the entity, not in services.
+- Factory methods with guard clauses for creation (validate all invariants).
+- Use UUID for identifiers.
+- Include a version field (plain long) for optimistic locking awareness.
+- Status transitions must be explicit and validated.
 
 ## Deliverables
 
-For each task you complete, provide:
-- All source files (src/main/java + src/test/java)
-- Brief summary of what was implemented and design decisions made
-- Confirmation that tests pass (run mvn -q test -pl <module> if bash is available)
+For each task:
+- All source files (main + test).
+- Brief summary of invariants enforced.
+- Confirmation that tests pass.
