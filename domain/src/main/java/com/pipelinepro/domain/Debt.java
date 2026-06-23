@@ -70,6 +70,10 @@ public final class Debt {
         return id;
     }
 
+    public UUID debtorId() {
+        return debtorId;
+    }
+
     public BigDecimal remainingAmount() {
         return remainingAmount;
     }

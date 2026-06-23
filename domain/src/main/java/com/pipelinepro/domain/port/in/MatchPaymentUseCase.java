@@ -1,8 +1,8 @@
 package com.pipelinepro.domain.port.in;
 
-import com.pipelinepro.domain.AllocationProposal;
 import com.pipelinepro.domain.port.in.command.MatchPaymentCommand;
+import com.pipelinepro.domain.port.in.result.MatchPaymentResult;
 
 public interface MatchPaymentUseCase {
-    AllocationProposal matchPayment(MatchPaymentCommand command);
+    MatchPaymentResult matchPayment(MatchPaymentCommand command);
 }

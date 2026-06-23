@@ -28,7 +28,7 @@ class PaymentAllocationTest {
                 "user-a",
                 now.plusSeconds(1));
 
-        assertThat(allocation.status()).isEqualTo(AllocationStatus.EFFECTIVE);
+        assertThat(allocation.status()).isEqualTo(AllocationStatus.ALLOCATED);
         assertThat(payment.remainingAmount()).isEqualByComparingTo("40.00");
         assertThat(debt.remainingAmount()).isEqualByComparingTo("20.00");
     }

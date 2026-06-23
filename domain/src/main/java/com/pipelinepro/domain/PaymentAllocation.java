@@ -71,7 +71,7 @@ public final class PaymentAllocation {
                 debt.id(),
                 proposalId,
                 amount,
-                AllocationStatus.EFFECTIVE,
+                AllocationStatus.ALLOCATED,
                 idempotencyKey,
                 commandId,
                 createdBy,
