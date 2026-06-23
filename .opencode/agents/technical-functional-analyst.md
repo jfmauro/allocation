@@ -20,4 +20,5 @@ permission:
   bash: deny
   skill:
     "technical-analyst-builder": allow
+    "belgif-rest-api-designer" : allow
 ---
