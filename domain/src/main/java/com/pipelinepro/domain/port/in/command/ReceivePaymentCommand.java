@@ -8,10 +8,13 @@ import java.util.UUID;
 public record ReceivePaymentCommand(
         UUID paymentId,
         String bankTransactionReference,
+        Instant executionDate,
+        Instant valueDate,
         BigDecimal amount,
         String currency,
         String structuredCommunication,
         String freeCommunication,
+        String rawBankMessage,
         String payerName,
         String payerIbanMasked,
         Instant receivedAt) {
