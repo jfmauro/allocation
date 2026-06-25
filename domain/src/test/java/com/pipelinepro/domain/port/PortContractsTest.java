@@ -39,8 +39,11 @@ class PortContractsTest {
         Payment payment = useCase.receivePayment(new ReceivePaymentCommand(
                 paymentId,
                 "TX-PORT-1",
+                null,
+                null,
                 new BigDecimal("50.00"),
                 "EUR",
+                null,
                 null,
                 null,
                 "Payer",

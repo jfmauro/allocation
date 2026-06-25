@@ -1,4 +1,6 @@
 # Build
+**/bin/
+**/out/
 target/
 *.class
 *.jar
@@ -21,7 +23,16 @@ target/
 
 # OpenCode
 .opencode/node_modules
-*.*
+
+# IDE metadata
+/.classpath
+/.project
+/.settings/
+/.factorypath
+**/.classpath
+**/.project
+**/.settings/
+**/.factorypath
 
 #git
 .gitkeep
