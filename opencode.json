@@ -19,15 +19,15 @@
   "agent": {
     "orchestrator": { "model": "openai/fait-gpt-5.4-Custom" },
     "technical-functional-analyst": { "model": "openai/fait-gpt-5.4-Custom" },
-    "sad-architect-reviewer": { "model": "openai/fait-gpt-5.4-Custom" },
+    "sad-architect-reviewer": { "model": "openai/fait-gpt-5.k2.6-custom" },
     "planner": { "model": "openai/fait-gpt-5.4-Custom" },
     "domain-engineer": { "model": "openai/fait-gpt-5.4-Custom" },
     "persistence-engineer": { "model": "openai/fait-gpt-5.4-Custom" },
-    "web-engineer": { "model": "openai/fait-gpt-5.4-Custom" },
+    "web-engineer": { "model": "openai/fait-gpt-5.k2.6-custom" },
     "frontend-engineer": { "model": "openai/fait-gpt-5.4-Custom" },
     "test-engineer": { "model": "openai/fait-gpt-5.4-Custom" },
-    "spec-reviewer": { "model": "openai/fait-gpt-5.4-Custom" },
-    "code-reviewer": { "model": "openai/fait-gpt-5.4-Custom" },
+    "spec-reviewer": { "model": "openai/fait-gpt-5.k2.6-custom" },
+    "code-reviewer": { "model": "openai/fait-gpt-5.k2.6-custom" },
     "documentation-engineer": { "model": "openai/fait-gpt-5.4-Custom" }
   }
 }
