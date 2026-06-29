@@ -188,13 +188,58 @@ Always follow these rules:
 Check whether the user provided:
 
 - a target SAD;
-- a technical analysis.
+- an analysis to review (technical-analysis, extension-analysis, or refactor-analysis);
+- the active SAD_CHECK flag passed by the calling command.
 
-If either is missing, stop and return:
+Resolution rules:
 
-`Insufficient information`.
+- If the analysis is missing, stop and return `Insufficient information` and explain what is required.
+- If the target SAD is missing AND SAD_CHECK = with-sad, stop and return `Insufficient information — SAD required`.
+- If the target SAD is missing AND SAD_CHECK = no-sad, do NOT stop. Enter No-SAD best-effort mode (see below).
+- If the analysis is .opencode/plans/extension-analysis.md, enter Extension review mode (see below).
+- If the analysis is .opencode/plans/refactor-analysis.md, enter Refactor review mode (see below).
 
-Explain what is missing and what is required to proceed.
+#### No-SAD best-effort mode
+
+When SAD_CHECK = no-sad and no SAD is available:
+
+- Do not invent SAD content.
+- Replace every "Fidelity to Target SAD" check by an equivalent check against generic architecture standards:
+   - hexagonal architecture rules;
+   - SOLID principles;
+   - Spring Boot conventions;
+   - REST best practices;
+   - production-ready database schema rules.
+- In the output report:
+   - replace every "Evidence from target SAD" field by "Generic standard applied: <standard name>";
+   - set the global confidence level to MEDIUM or lower;
+   - allow the verdict NO_SAD_BEST_EFFORT_OK in addition to APPROVED and CHANGES_REQUESTED;
+   - insert at the top of the report a warning block:
+     WARNING: review performed without SAD validation. Findings are best-effort against generic architecture standards.
+
+#### Extension review mode
+
+When the analysis is .opencode/plans/extension-analysis.md:
+
+- Use .opencode/plans/extension-analysis.md as the primary analysis input.
+- Optionally load .opencode/plans/architecture-plan.md and .opencode/plans/technical-analysis.md as historical reference.
+- Add three review dimensions on top of the standard ones:
+   - integration points: verify the analysis lists each existing module, class, endpoint, table, and configuration entry that must be touched for wiring, with a clear rationale;
+   - preserved contract: verify the analysis explicitly lists APIs, schema entries, and observable behaviors that must remain unchanged;
+   - additive consistency: verify the new data model deltas are additive (no destructive schema change without an explicit decision); verify that new endpoints follow the same conventions as the existing API surface.
+- Findings on these dimensions are reported under section "Extension-specific findings" in the standard report structure.
+
+#### Refactor review mode
+
+When the analysis is .opencode/plans/refactor-analysis.md:
+
+- Use .opencode/plans/refactor-analysis.md as the primary analysis input.
+- Optionally load .opencode/plans/architecture-plan.md and .opencode/plans/technical-analysis.md as historical reference.
+- Add three review dimensions on top of the standard ones:
+   - non-regression contract: verify the refactor analysis explicitly lists preserved public APIs, persistence schema entries, and observable behaviors;
+   - characterization safety net: verify the analysis prescribes tests to add before refactoring;
+   - rollback strategy: verify the analysis defines a rollback path.
+- Findings on these dimensions are reported under section "Refactor-specific findings" in the standard report structure.
 
 ---
 

@@ -246,12 +246,63 @@ You may propose reasonable implementation options only if clearly labelled as:
 
 Check that the following are available:
 
-- business analysis;
-- target SAD.
+- a business analysis (any file under knowledge/baseline/, knowledge/inbox/, or the root of knowledge/ that describes business intent);
+- a target SAD (filename containing "sad" case-insensitive, in any of the above locations);
+- the active mode and SAD_CHECK flag passed by the calling command.
 
-If either is missing, stop and return `Insufficient information`.
+Knowledge directory convention:
 
-If the fixed template is not provided, apply the embedded template structure.
+- knowledge/baseline/ - historical context;
+- knowledge/inbox/ - new scope to process during the current cycle;
+- Files at the root of knowledge/ - treated as baseline by default with a backward-compatibility warning.
+
+Resolution rules:
+
+- If the business analysis is missing in all locations, stop and return `Insufficient information`.
+- If the target SAD is missing AND SAD_CHECK = with-sad, stop and return `Insufficient information — SAD required`.
+- If the target SAD is missing AND SAD_CHECK = no-sad, do NOT stop. Enter No-SAD best-effort mode (see below).
+- If the fixed template is not provided, apply the embedded template structure.
+- If the active mode is extension-business or refactor-business, also load the contents of knowledge/inbox/ as the authoritative new scope. Abort if inbox/ is empty.
+- If the active mode is refactor-technical, knowledge/inbox/ may be empty.
+- If the active mode is extension-business, refactor-business or refactor-technical, also load the existing codebase (read-only) and the historical plan files under .opencode/plans/ as additional inputs.
+
+#### No-SAD best-effort mode
+
+When SAD_CHECK = no-sad and no SAD is available:
+
+- Do not invent SAD content.
+- Replace SAD-derived constraints by generic architecture standards: hexagonal architecture rules, SOLID, Spring Boot conventions, REST best practices.
+- Every section that would normally cite the SAD must instead state: "Requires architect confirmation (no SAD available)".
+- Add at the top of the produced analysis a warning block:
+  WARNING: produced without SAD validation.
+  Findings are best-effort against generic architecture standards.
+- All other workflow steps remain identical.
+
+#### Extension mode
+
+When the active mode is extension-business:
+
+- Read the existing codebase (read-only) before producing any output.
+- Read .opencode/plans/architecture-plan.md and .opencode/plans/technical-analysis.md if present, as historical baseline.
+- The contents of knowledge/inbox/ ARE the new scope, by convention.
+- Produce .opencode/plans/extension-analysis.md (not technical-analysis.md) following the template at .opencode/templates/extension-analysis.md.
+- Per user story, apply the full mandatory output structure of this skill.
+- In addition, produce two transversal sections:
+    - "Integration points with the existing codebase";
+    - "Preserved contract".
+- In the Readiness Assessment, if the new business analysis primarily modifies existing behavior (more than 30 percent of the user stories impact already-implemented features), recommend switching to refactor-business mode and stop the analysis.
+- Load the feature-extension-methodology skill in addition to this one.
+
+#### Refactoring mode
+
+When the active mode is refactor-business or refactor-technical:
+
+- Read the existing codebase (read-only) before producing any output.
+- Read .opencode/plans/architecture-plan.md and .opencode/plans/technical-analysis.md if present, as historical reference.
+- Produce .opencode/plans/refactor-analysis.md (not technical-analysis.md) following the template at .opencode/templates/refactor-analysis.md.
+- For refactor-business: the change request lives in knowledge/inbox/ (any filename); the SAD (when available) defines the architectural constraints; the existing codebase defines the baseline.
+- For refactor-technical: the existing codebase is the primary input; no business change is allowed.
+- Load the refactoring-methodology skill in addition to this one.
 
 ---
 
