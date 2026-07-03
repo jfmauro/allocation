@@ -2,6 +2,9 @@ package com.pipelinepro.application;
 
 import com.pipelinepro.domain.Debt;
 import com.pipelinepro.domain.DebtStatus;
+import com.pipelinepro.domain.Debtor;
+import com.pipelinepro.domain.DebtorType;
+import com.pipelinepro.domain.port.out.DebtorRepository;
 import com.pipelinepro.domain.port.out.AllocationProposalRepository;
 import com.pipelinepro.domain.port.out.DebtRepository;
 import com.pipelinepro.domain.port.out.PaymentAllocationRepository;
@@ -26,11 +29,13 @@ class QueryApplicationServiceTest {
         AllocationProposalRepository proposalRepository = mock(AllocationProposalRepository.class);
         PaymentAllocationRepository paymentAllocationRepository = mock(PaymentAllocationRepository.class);
         DebtRepository debtRepository = mock(DebtRepository.class);
+        DebtorRepository debtorRepository = mock(DebtorRepository.class);
         QueryApplicationService service = new QueryApplicationService(
                 paymentRepository,
                 proposalRepository,
                 paymentAllocationRepository,
-                debtRepository);
+                debtRepository,
+                debtorRepository);
 
         UUID debtorId = UUID.randomUUID();
         Instant now = Instant.parse("2026-06-01T10:00:00Z");
@@ -51,11 +56,13 @@ class QueryApplicationServiceTest {
         AllocationProposalRepository proposalRepository = mock(AllocationProposalRepository.class);
         PaymentAllocationRepository paymentAllocationRepository = mock(PaymentAllocationRepository.class);
         DebtRepository debtRepository = mock(DebtRepository.class);
+        DebtorRepository debtorRepository = mock(DebtorRepository.class);
         QueryApplicationService service = new QueryApplicationService(
                 paymentRepository,
                 proposalRepository,
                 paymentAllocationRepository,
-                debtRepository);
+                debtRepository,
+                debtorRepository);
 
         UUID paymentId = UUID.randomUUID();
         UUID proposalId = UUID.randomUUID();
@@ -86,11 +93,13 @@ class QueryApplicationServiceTest {
         AllocationProposalRepository proposalRepository = mock(AllocationProposalRepository.class);
         PaymentAllocationRepository paymentAllocationRepository = mock(PaymentAllocationRepository.class);
         DebtRepository debtRepository = mock(DebtRepository.class);
+        DebtorRepository debtorRepository = mock(DebtorRepository.class);
         QueryApplicationService service = new QueryApplicationService(
                 paymentRepository,
                 proposalRepository,
                 paymentAllocationRepository,
-                debtRepository);
+                debtRepository,
+                debtorRepository);
 
         UUID debtorId = UUID.randomUUID();
         Instant now = Instant.parse("2026-06-01T11:00:00Z");
@@ -111,11 +120,13 @@ class QueryApplicationServiceTest {
         AllocationProposalRepository proposalRepository = mock(AllocationProposalRepository.class);
         PaymentAllocationRepository paymentAllocationRepository = mock(PaymentAllocationRepository.class);
         DebtRepository debtRepository = mock(DebtRepository.class);
+        DebtorRepository debtorRepository = mock(DebtorRepository.class);
         QueryApplicationService service = new QueryApplicationService(
                 paymentRepository,
                 proposalRepository,
                 paymentAllocationRepository,
-                debtRepository);
+                debtRepository,
+                debtorRepository);
 
         UUID debtorId = UUID.randomUUID();
         Instant now = Instant.parse("2026-06-01T12:00:00Z");
@@ -128,5 +139,28 @@ class QueryApplicationServiceTest {
         List<Debt> debts = service.listDebtsByDebtor(debtorId, null);
 
         assertThat(debts).containsExactly(open);
+    }
+
+    @Test
+    void should_filter_debtors_by_query_type_and_active_flag() {
+        PaymentRepository paymentRepository = mock(PaymentRepository.class);
+        AllocationProposalRepository proposalRepository = mock(AllocationProposalRepository.class);
+        PaymentAllocationRepository paymentAllocationRepository = mock(PaymentAllocationRepository.class);
+        DebtRepository debtRepository = mock(DebtRepository.class);
+        DebtorRepository debtorRepository = mock(DebtorRepository.class);
+        QueryApplicationService service = new QueryApplicationService(
+                paymentRepository,
+                proposalRepository,
+                paymentAllocationRepository,
+                debtRepository,
+                debtorRepository);
+
+        Debtor alice = Debtor.activeNaturalPerson(UUID.randomUUID(), "Alice Example", "85073003328", Instant.now());
+        Debtor acme = Debtor.activeEnterprise(UUID.randomUUID(), "Acme Corp", "0820501224", Instant.now());
+        when(debtorRepository.findAllActive()).thenReturn(List.of(alice, acme));
+
+        List<Debtor> results = service.listDebtors(new com.pipelinepro.domain.port.in.command.DebtorSearchCriteria("alice", DebtorType.NATURAL_PERSON, true));
+
+        assertThat(results).containsExactly(alice);
     }
 }

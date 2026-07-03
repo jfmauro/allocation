@@ -4,6 +4,7 @@
   "model": "openai/fait-gpt-5.4-Custom",
   "small_model": "openai/fait-gpt-5.4-Custom",
   "enabled_providers": ["openai"],
+  "lsp": true,
   "instructions": ["DESIGN.md"],
   "permission": {
     "bash": "ask",
@@ -19,15 +20,15 @@
   "agent": {
     "orchestrator": { "model": "openai/fait-gpt-5.4-Custom" },
     "technical-functional-analyst": { "model": "openai/fait-gpt-5.4-Custom" },
-    "sad-architect-reviewer": { "model": "openai/fait-gpt-5.k2.6-custom" },
+    "sad-architect-reviewer": { "model": "openai/fait-gpt-5.4-Custom" },
     "planner": { "model": "openai/fait-gpt-5.4-Custom" },
     "domain-engineer": { "model": "openai/fait-gpt-5.4-Custom" },
     "persistence-engineer": { "model": "openai/fait-gpt-5.4-Custom" },
-    "web-engineer": { "model": "openai/fait-gpt-5.k2.6-custom" },
+    "web-engineer": { "model": "openai/fait-gpt-5.4-Custom" },
     "frontend-engineer": { "model": "openai/fait-gpt-5.4-Custom" },
     "test-engineer": { "model": "openai/fait-gpt-5.4-Custom" },
-    "spec-reviewer": { "model": "openai/fait-gpt-5.k2.6-custom" },
-    "code-reviewer": { "model": "openai/fait-gpt-5.k2.6-custom" },
+    "spec-reviewer": { "model": "openai/fait-gpt-5.4-Custom" },
+    "code-reviewer": { "model": "openai/fait-gpt-5.4-Custom" },
     "documentation-engineer": { "model": "openai/fait-gpt-5.4-Custom" }
   }
 }

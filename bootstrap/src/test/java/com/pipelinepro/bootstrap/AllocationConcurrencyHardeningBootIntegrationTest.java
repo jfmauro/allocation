@@ -187,8 +187,7 @@ class AllocationConcurrencyHardeningBootIntegrationTest {
         DebtorEntity debtor = new DebtorEntity();
         debtor.setType(DebtorType.NATURAL_PERSON);
         debtor.setDisplayName("Boot Debtor");
-        debtor.setNationalNumberHash("hash-boot-" + UUID.randomUUID());
-        debtor.setNationalNumberEncrypted("enc-boot-" + UUID.randomUUID());
+        debtor.setNationalNumber("85073003328");
         debtor.setActive(true);
         debtor.setCreatedAt(now);
         DebtorEntity savedDebtor = springDataDebtorRepository.saveAndFlush(debtor);

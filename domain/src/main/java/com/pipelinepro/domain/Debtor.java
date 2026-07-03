@@ -12,25 +12,22 @@ public final class Debtor {
     private final UUID id;
     private final DebtorType type;
     private final String displayName;
-    private final String nationalNumberHash;
-    private final String nationalNumberEncrypted;
+    private final String nationalNumber;
     private final String enterpriseNumber;
     private boolean active;
     private final Instant createdAt;
 
     public Debtor(UUID id,
                   DebtorType type,
-                  String displayName,
-                  String nationalNumberHash,
-                  String nationalNumberEncrypted,
+                   String displayName,
+                   String nationalNumber,
                   String enterpriseNumber,
                   boolean active,
                   Instant createdAt) {
         this.id = Objects.requireNonNull(id, "id");
         this.type = Objects.requireNonNull(type, "type");
         this.displayName = requireNotBlank(displayName, "displayName");
-        this.nationalNumberHash = normalizeNullable(nationalNumberHash);
-        this.nationalNumberEncrypted = normalizeNullable(nationalNumberEncrypted);
+        this.nationalNumber = normalizeNullable(nationalNumber);
         this.enterpriseNumber = normalizeNullable(enterpriseNumber);
         this.active = active;
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt");
@@ -40,11 +37,10 @@ public final class Debtor {
 
     public static Debtor activeNaturalPerson(UUID id,
                                              String displayName,
-                                             String nationalNumberHash,
-                                             String nationalNumberEncrypted,
+                                              String nationalNumber,
                                              Instant createdAt) {
         log.info("+++start activeNaturalPerson+++ ");
-        Debtor debtor = new Debtor(id, DebtorType.NATURAL_PERSON, displayName, nationalNumberHash, nationalNumberEncrypted, null, true, createdAt);
+        Debtor debtor = new Debtor(id, DebtorType.NATURAL_PERSON, displayName, nationalNumber, null, true, createdAt);
         log.info("+++end activeNaturalPerson+++ ");
         return debtor;
     }
@@ -54,7 +50,7 @@ public final class Debtor {
                                           String enterpriseNumber,
                                           Instant createdAt) {
         log.info("+++start activeEnterprise+++ ");
-        Debtor debtor = new Debtor(id, DebtorType.ENTERPRISE, displayName, null, null, enterpriseNumber, true, createdAt);
+        Debtor debtor = new Debtor(id, DebtorType.ENTERPRISE, displayName, null, enterpriseNumber, true, createdAt);
         log.info("+++end activeEnterprise+++ ");
         return debtor;
     }
@@ -71,12 +67,8 @@ public final class Debtor {
         return displayName;
     }
 
-    public Optional<String> nationalNumberHash() {
-        return Optional.ofNullable(nationalNumberHash);
-    }
-
-    public Optional<String> nationalNumberEncrypted() {
-        return Optional.ofNullable(nationalNumberEncrypted);
+    public Optional<String> nationalNumber() {
+        return Optional.ofNullable(nationalNumber);
     }
 
     public Optional<String> enterpriseNumber() {
@@ -98,8 +90,8 @@ public final class Debtor {
     }
 
     private void requireIdentifiersByType() {
-        if (type == DebtorType.NATURAL_PERSON && nationalNumberHash == null && nationalNumberEncrypted == null) {
-            throw new IllegalStateException("Natural person debtor requires national number identifiers");
+        if (type == DebtorType.NATURAL_PERSON && nationalNumber == null) {
+            throw new IllegalStateException("Natural person debtor requires nationalNumber");
         }
         if (type == DebtorType.ENTERPRISE && enterpriseNumber == null) {
             throw new IllegalStateException("Enterprise debtor requires enterpriseNumber");
@@ -110,8 +102,8 @@ public final class Debtor {
         if (type == DebtorType.NATURAL_PERSON && enterpriseNumber != null) {
             throw new IllegalStateException("Natural person debtor cannot define enterpriseNumber");
         }
-        if (type == DebtorType.ENTERPRISE && (nationalNumberHash != null || nationalNumberEncrypted != null)) {
-            throw new IllegalStateException("Enterprise debtor cannot define national number fields");
+        if (type == DebtorType.ENTERPRISE && nationalNumber != null) {
+            throw new IllegalStateException("Enterprise debtor cannot define nationalNumber");
         }
     }
 

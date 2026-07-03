@@ -1,14 +1,20 @@
 package com.pipelinepro.adapter.in.web.error;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.validation.FieldError;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.Instant;
 
@@ -16,6 +22,7 @@ import java.time.Instant;
 public class GlobalRestExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalRestExceptionHandler.class);
+    private static final AuthenticationTrustResolverImpl TRUST_RESOLVER = new AuthenticationTrustResolverImpl();
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleValidationException(MethodArgumentNotValidException exception, HttpServletRequest request) {
@@ -42,6 +49,17 @@ public class GlobalRestExceptionHandler {
             return buildProblemDetail(HttpStatus.BAD_REQUEST, "Bad request", request);
         } finally {
             log.warn("+++end handleIllegalArgumentException+++");
+        }
+    }
+
+    @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
+    public ProblemDetail handleRequestParsingException(Exception exception, HttpServletRequest request) {
+        log.warn("+++start handleRequestParsingException+++");
+        try {
+            log.warn("+++request parsing details kept server-side+++", exception);
+            return buildProblemDetail(HttpStatus.BAD_REQUEST, "Bad request", request);
+        } finally {
+            log.warn("+++end handleRequestParsingException+++");
         }
     }
 
@@ -86,6 +104,32 @@ public class GlobalRestExceptionHandler {
             return buildProblemDetail(HttpStatus.FORBIDDEN, "Forbidden", request);
         } finally {
             log.warn("+++end handleForbiddenWebException+++");
+        }
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ProblemDetail handleAuthorizationDeniedException(AuthorizationDeniedException exception, HttpServletRequest request) {
+        log.warn("+++start handleAuthorizationDeniedException+++");
+        try {
+            log.warn("+++authorization denied details kept server-side+++", exception);
+            var authentication = SecurityContextHolder.getContext().getAuthentication();
+            HttpStatus status = authentication == null || TRUST_RESOLVER.isAnonymous(authentication)
+                    ? HttpStatus.UNAUTHORIZED
+                    : HttpStatus.FORBIDDEN;
+            return buildProblemDetail(status, status == HttpStatus.UNAUTHORIZED ? "Unauthorized" : "Forbidden", request);
+        } finally {
+            log.warn("+++end handleAuthorizationDeniedException+++");
+        }
+    }
+
+    @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
+    public ProblemDetail handleAuthenticationCredentialsNotFoundException(AuthenticationCredentialsNotFoundException exception, HttpServletRequest request) {
+        log.warn("+++start handleAuthenticationCredentialsNotFoundException+++");
+        try {
+            log.warn("+++authentication missing details kept server-side+++", exception);
+            return buildProblemDetail(HttpStatus.UNAUTHORIZED, "Unauthorized", request);
+        } finally {
+            log.warn("+++end handleAuthenticationCredentialsNotFoundException+++");
         }
     }
 

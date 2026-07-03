@@ -9,9 +9,11 @@ import java.util.UUID;
 public interface DebtorRepository {
     Optional<Debtor> findById(UUID debtorId);
 
-    Optional<Debtor> findByNationalNumberHash(String nationalNumberHash);
+    Optional<Debtor> findByNationalNumber(String nationalNumber);
 
     Optional<Debtor> findByEnterpriseNumber(String enterpriseNumber);
 
     List<Debtor> findAllActive();
+
+    List<Debtor> findAll();
 }

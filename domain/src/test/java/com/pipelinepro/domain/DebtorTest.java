@@ -15,12 +15,11 @@ class DebtorTest {
         Debtor debtor = Debtor.activeNaturalPerson(
                 UUID.randomUUID(),
                 "Jane Doe",
-                "hash-123",
-                "enc-123",
+                "85073003328",
                 Instant.now());
 
         assertThat(debtor.type()).isEqualTo(DebtorType.NATURAL_PERSON);
-        assertThat(debtor.nationalNumberHash()).contains("hash-123");
+        assertThat(debtor.nationalNumber()).contains("85073003328");
         assertThat(debtor.enterpriseNumber()).isEmpty();
         assertThat(debtor.active()).isTrue();
     }
@@ -31,13 +30,12 @@ class DebtorTest {
                 UUID.randomUUID(),
                 DebtorType.ENTERPRISE,
                 "Acme SA",
-                "niss-hash",
-                null,
+                "85073003328",
                 "0820501224",
                 true,
                 Instant.now()))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Enterprise debtor cannot define national number fields");
+                .hasMessageContaining("Enterprise debtor cannot define nationalNumber");
     }
 
     @Test
@@ -48,11 +46,10 @@ class DebtorTest {
                 "Jane Doe",
                 null,
                 null,
-                null,
                 true,
                 Instant.now()))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("requires national number identifiers");
+                .hasMessageContaining("requires nationalNumber");
     }
 
     @Test

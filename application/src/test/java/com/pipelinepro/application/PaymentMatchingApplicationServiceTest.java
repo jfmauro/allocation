@@ -256,12 +256,12 @@ class PaymentMatchingApplicationServiceTest {
                 "John Doe",
                 null,
                 now);
-        Debtor debtor = Debtor.activeNaturalPerson(UUID.randomUUID(), "John Doe", "85073003328", "enc", now);
+        Debtor debtor = Debtor.activeNaturalPerson(UUID.randomUUID(), "John Doe", "85073003328", now);
         Debt debt = Debt.open(UUID.randomUUID(), debtor.id(), "DEBT-NISS-1", new BigDecimal("60.00"), "EUR", null, now);
 
         when(paymentRepository.findById(paymentId)).thenReturn(Optional.of(payment));
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(debtorRepository.findByNationalNumberHash("85073003328")).thenReturn(Optional.of(debtor));
+        when(debtorRepository.findByNationalNumber("85073003328")).thenReturn(Optional.of(debtor));
         when(debtRepository.findByDebtorIds(anySet())).thenReturn(List.of(debt));
         when(proposalRepository.save(any(AllocationProposal.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(candidateRepository.save(any(AllocationProposalCandidate.class))).thenAnswer(invocation -> invocation.getArgument(0));

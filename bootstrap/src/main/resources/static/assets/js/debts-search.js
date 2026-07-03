@@ -130,7 +130,9 @@ if (typeof document !== "undefined") {
                     ["Debt ID", displayText(debt.id)],
                     ["Debtor ID", displayText(debt.debtorId)],
                     ["Status", displayText(debt.status)],
-                    ["Remaining", formatMoney(debt.remainingAmount, debt.currency)]
+                    ["Remaining", formatMoney(debt.remainingAmount, debt.currency)],
+                    ["Structured communication", displayText(debt.structuredCommunication)],
+                    ["Free communication", displayText(debt.freeCommunication)]
                 ];
 
                 fields.forEach(([label, value]) => {

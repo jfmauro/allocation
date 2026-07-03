@@ -74,6 +74,10 @@ public final class Debt {
         return debtorId;
     }
 
+    public String reference() {
+        return reference;
+    }
+
     public BigDecimal remainingAmount() {
         return remainingAmount;
     }

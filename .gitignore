@@ -1,6 +1,10 @@
 # Build
 **/bin/
 **/out/
+!**/src/main/**/out/
+!**/src/main/**/out/**
+!**/src/test/**/out/
+!**/src/test/**/out/**
 target/
 *.class
 *.jar

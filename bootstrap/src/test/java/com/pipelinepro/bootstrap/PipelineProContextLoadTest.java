@@ -5,16 +5,23 @@ import com.pipelinepro.adapter.out.persistence.impl.JpaAllocationProposalCandida
 import com.pipelinepro.adapter.out.persistence.impl.JpaAllocationProposalRepository;
 import com.pipelinepro.adapter.out.persistence.impl.JpaAllocationTransactionalWorker;
 import com.pipelinepro.adapter.out.persistence.impl.JpaAuditEventGateway;
+import com.pipelinepro.adapter.out.persistence.impl.JpaDebtIntakeTransactionalWorker;
 import com.pipelinepro.adapter.out.persistence.impl.JpaDebtRepository;
+import com.pipelinepro.adapter.out.persistence.impl.JpaDebtorIntakeTransactionalWorker;
 import com.pipelinepro.adapter.out.persistence.impl.JpaDebtorRepository;
+import com.pipelinepro.adapter.out.persistence.impl.JpaIntakeAuditEventGateway;
 import com.pipelinepro.adapter.out.persistence.impl.JpaPaymentAllocationRepository;
 import com.pipelinepro.adapter.out.persistence.impl.JpaPaymentRepository;
 import com.pipelinepro.application.AllocationExecutionApplicationService;
+import com.pipelinepro.application.CreateDebtIntakeApplicationService;
+import com.pipelinepro.application.CreateDebtorIntakeApplicationService;
 import com.pipelinepro.application.PaymentIntakeApplicationService;
 import com.pipelinepro.application.PaymentMatchingApplicationService;
 import com.pipelinepro.application.ProposalLifecycleApplicationService;
 import com.pipelinepro.application.ProposalQueryApplicationService;
 import com.pipelinepro.application.QueryApplicationService;
+import com.pipelinepro.domain.port.in.CreateDebtIntakeUseCase;
+import com.pipelinepro.domain.port.in.CreateDebtorIntakeUseCase;
 import com.pipelinepro.domain.port.in.ExecuteAllocationUseCase;
 import com.pipelinepro.domain.port.in.GetAllocationDetailUseCase;
 import com.pipelinepro.domain.port.in.GetProposalCandidatesUseCase;
@@ -47,9 +54,11 @@ class PipelineProContextLoadTest {
     }
 
     @Test
-    void contextShouldLoadWithExactlyOneInboundUseCaseBeanPerPort() {
+    void should_loadContextWithExactlyOneInboundUseCaseBeanPerPort_when_bootstrapApplicationStarts() {
         assertThat(applicationContext.getBeansOfType(ReceivePaymentUseCase.class)).hasSize(1);
         assertThat(applicationContext.getBeansOfType(MatchPaymentUseCase.class)).hasSize(1);
+        assertThat(applicationContext.getBeansOfType(CreateDebtorIntakeUseCase.class)).hasSize(1);
+        assertThat(applicationContext.getBeansOfType(CreateDebtIntakeUseCase.class)).hasSize(1);
         assertThat(applicationContext.getBeansOfType(ProposalLifecycleUseCase.class)).hasSize(1);
         assertThat(applicationContext.getBeansOfType(ExecuteAllocationUseCase.class)).hasSize(1);
         assertThat(applicationContext.getBeansOfType(QueryPaymentUseCase.class)).hasSize(1);
@@ -60,7 +69,7 @@ class PipelineProContextLoadTest {
     }
 
     @Test
-    void contextShouldWireRealApplicationServicesWithAdapterOutPorts() {
+    void should_wireRealApplicationServicesWithAdapterOutPorts_when_bootstrapApplicationStarts() {
         ReceivePaymentUseCase receivePaymentUseCase = applicationContext.getBean(ReceivePaymentUseCase.class);
         assertThat(receivePaymentUseCase).isInstanceOf(PaymentIntakeApplicationService.class);
         assertThat(ReflectionTestUtils.getField(receivePaymentUseCase, "paymentRepository"))
@@ -108,6 +117,22 @@ class PipelineProContextLoadTest {
                 .isInstanceOf(JpaAllocationProposalRepository.class);
         assertThat(ReflectionTestUtils.getField(executeAllocationUseCase, "allocationTransactionalWorker"))
                 .isInstanceOf(JpaAllocationTransactionalWorker.class);
+
+        CreateDebtorIntakeUseCase createDebtorIntakeUseCase = applicationContext.getBean(CreateDebtorIntakeUseCase.class);
+        assertThat(createDebtorIntakeUseCase).isInstanceOf(CreateDebtorIntakeApplicationService.class);
+        Object debtorIntakeWorker = ReflectionTestUtils.getField(createDebtorIntakeUseCase, "debtorIntakeWorker");
+        assertThat(ReflectionTestUtils.getField(debtorIntakeWorker, "debtorIntakeTransactionalWorker"))
+                .isInstanceOf(JpaDebtorIntakeTransactionalWorker.class);
+        assertThat(ReflectionTestUtils.getField(createDebtorIntakeUseCase, "intakeAuditEventGateway"))
+                .isInstanceOf(JpaIntakeAuditEventGateway.class);
+
+        CreateDebtIntakeUseCase createDebtIntakeUseCase = applicationContext.getBean(CreateDebtIntakeUseCase.class);
+        assertThat(createDebtIntakeUseCase).isInstanceOf(CreateDebtIntakeApplicationService.class);
+        Object debtIntakeWorker = ReflectionTestUtils.getField(createDebtIntakeUseCase, "debtIntakeWorker");
+        assertThat(ReflectionTestUtils.getField(debtIntakeWorker, "debtIntakeTransactionalWorker"))
+                .isInstanceOf(JpaDebtIntakeTransactionalWorker.class);
+        assertThat(ReflectionTestUtils.getField(createDebtIntakeUseCase, "intakeAuditEventGateway"))
+                .isInstanceOf(JpaIntakeAuditEventGateway.class);
 
         QueryPaymentUseCase queryPaymentUseCase = applicationContext.getBean(QueryPaymentUseCase.class);
         assertThat(queryPaymentUseCase)

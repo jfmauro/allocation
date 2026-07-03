@@ -13,6 +13,8 @@ public record DebtResponse(
         String currency,
         DebtStatus status,
         LocalDate dueDate,
+        String structuredCommunication,
+        String freeCommunication,
         Long version,
         Instant createdAt,
         Instant updatedAt) {

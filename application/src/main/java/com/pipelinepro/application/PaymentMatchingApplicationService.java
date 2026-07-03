@@ -317,7 +317,7 @@ public final class PaymentMatchingApplicationService implements MatchPaymentUseC
     private Optional<Debtor> resolveDebtorByNationalRegisterIdentifier(String rawIdentifier) {
         try {
             String nationalDigits = NationalRegisterNumber.of(rawIdentifier).digits();
-            return debtorRepository.findByNationalNumberHash(nationalDigits);
+            return debtorRepository.findByNationalNumber(nationalDigits);
         } catch (IllegalArgumentException invalidNationalRegisterNumber) {
             return Optional.empty();
         }

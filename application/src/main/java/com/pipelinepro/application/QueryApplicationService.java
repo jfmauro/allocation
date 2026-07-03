@@ -5,10 +5,13 @@ import com.pipelinepro.domain.Debt;
 import com.pipelinepro.domain.DebtStatus;
 import com.pipelinepro.domain.Payment;
 import com.pipelinepro.domain.PaymentAllocation;
+import com.pipelinepro.domain.Debtor;
 import com.pipelinepro.domain.port.in.GetAllocationDetailUseCase;
 import com.pipelinepro.domain.port.in.GetProposalDetailUseCase;
+import com.pipelinepro.domain.port.in.QueryDebtorUseCase;
 import com.pipelinepro.domain.port.in.QueryDebtUseCase;
 import com.pipelinepro.domain.port.in.QueryPaymentUseCase;
+import com.pipelinepro.domain.port.in.command.DebtorSearchCriteria;
 import com.pipelinepro.domain.port.out.AllocationProposalRepository;
 import com.pipelinepro.domain.port.out.DebtRepository;
 import com.pipelinepro.domain.port.out.PaymentAllocationRepository;
@@ -23,7 +26,8 @@ public final class QueryApplicationService implements
         QueryPaymentUseCase,
         GetProposalDetailUseCase,
         GetAllocationDetailUseCase,
-        QueryDebtUseCase {
+        QueryDebtUseCase,
+        QueryDebtorUseCase {
 
     private static final Logger log = LoggerFactory.getLogger(QueryApplicationService.class);
 
@@ -31,16 +35,19 @@ public final class QueryApplicationService implements
     private final AllocationProposalRepository allocationProposalRepository;
     private final PaymentAllocationRepository paymentAllocationRepository;
     private final DebtRepository debtRepository;
+    private final com.pipelinepro.domain.port.out.DebtorRepository debtorRepository;
 
     public QueryApplicationService(
             PaymentRepository paymentRepository,
             AllocationProposalRepository allocationProposalRepository,
             PaymentAllocationRepository paymentAllocationRepository,
-            DebtRepository debtRepository) {
+            DebtRepository debtRepository,
+            com.pipelinepro.domain.port.out.DebtorRepository debtorRepository) {
         this.paymentRepository = paymentRepository;
         this.allocationProposalRepository = allocationProposalRepository;
         this.paymentAllocationRepository = paymentAllocationRepository;
         this.debtRepository = debtRepository;
+        this.debtorRepository = debtorRepository;
     }
 
     @Override
@@ -106,6 +113,26 @@ public final class QueryApplicationService implements
                     .toList();
         } finally {
             log.info("+++end listDebtsByDebtor+++");
+        }
+    }
+
+    @Override
+    public List<Debtor> listDebtors(DebtorSearchCriteria criteria) {
+        log.info("+++start listDebtors+++");
+        try {
+            List<Debtor> debtors = Boolean.FALSE.equals(criteria == null ? null : criteria.active())
+                    ? debtorRepository.findAll()
+                    : debtorRepository.findAllActive();
+            String query = criteria == null || criteria.query() == null ? "" : criteria.query().trim().toLowerCase();
+            return debtors.stream()
+                    .filter(debtor -> criteria == null || criteria.debtorType() == null || debtor.type() == criteria.debtorType())
+                    .filter(debtor -> query.isEmpty() || debtor.displayName().toLowerCase().contains(query)
+                            || debtor.enterpriseNumber().map(value -> value.toLowerCase().contains(query)).orElse(false)
+                            || debtor.nationalNumber().map(value -> value.toLowerCase().contains(query)).orElse(false)
+                            || debtor.id().toString().toLowerCase().contains(query))
+                    .toList();
+        } finally {
+            log.info("+++end listDebtors+++");
         }
     }
 }

@@ -26,3 +26,19 @@ management:
     web:
       exposure:
         include: health,info
+  tracing:
+    sampling:
+      probability: 0.1
+logging:
+  pattern:
+    correlation: "corr=%X{correlationId:-},trace=%X{traceId:-},span=%X{spanId:-} "
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev,test
+management:
+  tracing:
+    sampling:
+      probability: 1.0
