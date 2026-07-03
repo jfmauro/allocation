@@ -11,5 +11,7 @@ public record AllocationProposalCandidateResponse(
         UUID debtId,
         MatchConfidence confidence,
         BigDecimal suggestedAmount,
-        int rankOrder) {
+        int rankOrder,
+        ProposalCandidateDebtResponse debt,
+        ProposalCandidateDebtorResponse debtor) {
 }

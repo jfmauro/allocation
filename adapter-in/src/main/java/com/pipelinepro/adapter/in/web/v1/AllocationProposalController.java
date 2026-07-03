@@ -7,15 +7,21 @@ import com.pipelinepro.adapter.in.web.v1.dto.request.RejectProposalRequest;
 import com.pipelinepro.adapter.in.web.v1.dto.request.RequestInvestigationRequest;
 import com.pipelinepro.adapter.in.web.v1.dto.request.SelectDebtRequest;
 import com.pipelinepro.adapter.in.web.v1.dto.request.ValidateProposalRequest;
+import com.pipelinepro.adapter.in.web.v1.dto.response.AllocationProposalCandidateResponse;
 import com.pipelinepro.adapter.in.web.v1.dto.response.AllocationProposalResponse;
 import com.pipelinepro.adapter.in.web.v1.dto.response.AllocationResultResponse;
 import com.pipelinepro.adapter.in.web.v1.dto.response.ProposalStateResponse;
 import com.pipelinepro.domain.AllocationProposal;
 import com.pipelinepro.domain.AllocationProposalCandidate;
+import com.pipelinepro.domain.Debt;
+import com.pipelinepro.domain.Debtor;
 import com.pipelinepro.domain.PaymentAllocation;
 import com.pipelinepro.domain.port.in.GetProposalCandidatesUseCase;
 import com.pipelinepro.domain.port.in.GetProposalDetailUseCase;
 import com.pipelinepro.domain.port.in.ProposalLifecycleUseCase;
+import com.pipelinepro.domain.port.in.QueryDebtUseCase;
+import com.pipelinepro.domain.port.in.QueryDebtorUseCase;
+import com.pipelinepro.domain.port.in.command.DebtorSearchCriteria;
 import com.pipelinepro.domain.port.in.command.MarkUnmatchedCommand;
 import com.pipelinepro.domain.port.in.command.RejectProposalCommand;
 import com.pipelinepro.domain.port.in.command.RequestInvestigationCommand;
@@ -44,16 +50,22 @@ public class AllocationProposalController {
     private final ProposalLifecycleUseCase proposalLifecycleUseCase;
     private final GetProposalDetailUseCase getProposalDetailUseCase;
     private final GetProposalCandidatesUseCase getProposalCandidatesUseCase;
+    private final QueryDebtUseCase queryDebtUseCase;
+    private final QueryDebtorUseCase queryDebtorUseCase;
     private final ProposalWebMapper proposalWebMapper;
 
     public AllocationProposalController(
             ProposalLifecycleUseCase proposalLifecycleUseCase,
             GetProposalDetailUseCase getProposalDetailUseCase,
             GetProposalCandidatesUseCase getProposalCandidatesUseCase,
+            QueryDebtUseCase queryDebtUseCase,
+            QueryDebtorUseCase queryDebtorUseCase,
             ProposalWebMapper proposalWebMapper) {
         this.proposalLifecycleUseCase = proposalLifecycleUseCase;
         this.getProposalDetailUseCase = getProposalDetailUseCase;
         this.getProposalCandidatesUseCase = getProposalCandidatesUseCase;
+        this.queryDebtUseCase = queryDebtUseCase;
+        this.queryDebtorUseCase = queryDebtorUseCase;
         this.proposalWebMapper = proposalWebMapper;
     }
 
@@ -64,10 +76,36 @@ public class AllocationProposalController {
             AllocationProposal proposal = getProposalDetailUseCase.getProposal(proposalId)
                     .orElseThrow(() -> new NotFoundWebException("Allocation proposal not found: " + proposalId));
             java.util.List<AllocationProposalCandidate> candidates = getProposalCandidatesUseCase.listCandidates(proposalId);
-            return ResponseEntity.ok(proposalWebMapper.toAllocationProposalResponse(proposal, candidates));
+            java.util.List<AllocationProposalCandidateResponse> candidatesWithContext = candidates.stream()
+                    .map(this::enrichCandidate)
+                    .toList();
+            return ResponseEntity.ok(proposalWebMapper.toAllocationProposalResponseWithCandidateResponses(proposal, candidatesWithContext));
         } finally {
             log.info("+++end getProposal+++");
         }
+    }
+
+    private AllocationProposalCandidateResponse enrichCandidate(AllocationProposalCandidate candidate) {
+        AllocationProposalCandidateResponse base = proposalWebMapper.toAllocationProposalCandidateResponse(candidate);
+        Debt debt = queryDebtUseCase.getDebt(candidate.debtId()).orElse(null);
+        Debtor debtor = resolveDebtor(candidate.debtorId()).orElse(null);
+        return new AllocationProposalCandidateResponse(
+                base.id(),
+                base.debtorId(),
+                base.debtId(),
+                base.confidence(),
+                base.suggestedAmount(),
+                base.rankOrder(),
+                debt == null ? null : proposalWebMapper.toProposalCandidateDebtResponse(debt),
+                debtor == null ? null : proposalWebMapper.toProposalCandidateDebtorResponse(debtor));
+    }
+
+    private java.util.Optional<Debtor> resolveDebtor(UUID debtorId) {
+        return queryDebtorUseCase
+                .listDebtors(new DebtorSearchCriteria(debtorId.toString(), null, false))
+                .stream()
+                .filter(debtor -> debtor.id().equals(debtorId))
+                .findFirst();
     }
 
     @PostMapping("/{proposalId}/validate")

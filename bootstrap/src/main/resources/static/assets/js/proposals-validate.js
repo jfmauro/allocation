@@ -46,6 +46,16 @@ function enrichCandidatesFromData(candidates, allocatableStatuses = PROPOSALS_VA
     return (Array.isArray(candidates) ? candidates : []).map((candidate) => normalizeCandidate(candidate, allocatableStatuses));
 }
 
+function selectInitialCandidate(candidates, preferredDebtId) {
+    const normalizedPreferredDebtId = String(preferredDebtId || "");
+    const visibleCandidates = Array.isArray(candidates)
+        ? candidates.filter((candidate) => candidate && (candidate.debtId || candidate.debt?.id))
+        : [];
+    return visibleCandidates.find((candidate) => String(candidate.debtId) === normalizedPreferredDebtId)
+        || visibleCandidates[0]
+        || null;
+}
+
 if (typeof document !== "undefined") {
     document.addEventListener("DOMContentLoaded", () => {
         const proposalIdInput = byId("proposal-id");
@@ -68,6 +78,7 @@ if (typeof document !== "undefined") {
         let currentProposal = null;
         let currentPayment = null;
         let currentCandidates = [];
+        let currentVisibleCandidates = [];
         let currentDebtById = new Map();
         let selectedDebtId = null;
         let selectedDebtor = null;
@@ -121,14 +132,13 @@ if (typeof document !== "undefined") {
                 currentProposal = proposal;
                 currentPayment = await fetchJson(getApiUrl(`/payments/${encodePathSegment(proposal.paymentId)}`)).catch(() => null);
 
-                const enrichedCandidates = enrichCandidatesFromData(proposal.candidates || []);
-                currentCandidates = enrichedCandidates.filter((candidate) => candidate.isAllocatable);
+                const enrichedCandidates = await hydrateCandidates(proposal.candidates || []);
+                currentCandidates = enrichedCandidates;
+                currentVisibleCandidates = enrichedCandidates.filter((candidate) => candidate.debtId || candidate.debt?.id);
                 currentDebtById = new Map(currentCandidates.map((candidate) => [String(candidate.debtId), candidate.debt]));
 
                 const preferredDebtId = proposal.selectedDebtId ? String(proposal.selectedDebtId) : "";
-                const initialCandidate = currentCandidates.find((candidate) => String(candidate.debtId) === preferredDebtId)
-                    || currentCandidates[0]
-                    || null;
+                const initialCandidate = selectInitialCandidate(currentVisibleCandidates, preferredDebtId);
 
                 selectedDebtId = initialCandidate ? String(initialCandidate.debtId) : null;
                 selectedDebtor = initialCandidate?.debtor || initialCandidate?.debt?.debtor || null;
@@ -140,7 +150,7 @@ if (typeof document !== "undefined") {
                     amountInput.value = initialCandidate.suggestedAmount || "";
                 }
 
-                renderCandidates(currentCandidates);
+                renderCandidates(currentVisibleCandidates);
                 renderInformationBlocks(initialCandidate);
                 updateQueryParam("proposalId", proposalId);
                 setBanner(banner, "success", `Proposal loaded (${proposal.status}).`);
@@ -155,11 +165,51 @@ if (typeof document !== "undefined") {
             }
         }
 
+        async function hydrateCandidates(candidates) {
+            const normalizedCandidates = enrichCandidatesFromData(candidates);
+            return Promise.all(normalizedCandidates.map(async (candidate) => {
+                const [debt, debtor] = await Promise.all([
+                    candidate.debt?.id ? Promise.resolve(candidate.debt) : fetchDebt(candidate.debtId),
+                    candidate.debtor?.id ? Promise.resolve(candidate.debtor) : fetchDebtor(candidate.debtorId)
+                ]);
+                const hydratedDebt = debt ? { ...debt, debtor } : debt;
+                return normalizeCandidate({
+                    ...candidate,
+                    debt: hydratedDebt,
+                    debtor
+                });
+            }));
+        }
+
+        async function fetchDebt(debtId) {
+            if (!debtId) {
+                return null;
+            }
+            try {
+                return await fetchJson(getApiUrl(`/debts/${encodePathSegment(debtId)}`));
+            } catch {
+                return null;
+            }
+        }
+
+        async function fetchDebtor(debtorId) {
+            if (!debtorId) {
+                return null;
+            }
+            try {
+                const response = await fetchJson(getApiUrl(`/debtors?query=${encodeURIComponent(String(debtorId))}`));
+                const debtors = Array.isArray(response) ? response : (response?.debtors || response?.items || []);
+                return debtors.find((debtor) => String(debtor?.id || "") === String(debtorId)) || null;
+            } catch {
+                return null;
+            }
+        }
+
         function renderCandidates(candidates) {
             candidateList.replaceChildren();
 
             if (!candidates.length) {
-                renderMuted(candidateList, "No allocatable candidate debts found (OPEN or PARTIALLY_PAID only).", "li");
+                renderMuted(candidateList, "No candidate debts found for this proposal.", "li");
                 return;
             }
 
@@ -172,7 +222,8 @@ if (typeof document !== "undefined") {
                 button.className = "btn btn-ghost";
                 button.dataset.debtId = String(candidate.debtId || "");
                 button.dataset.amount = String(candidate.suggestedAmount || "");
-                button.textContent = `Debt ${displayText(candidate.debtId)} • ${displayText(candidate.debt?.status)} • ${displayText(candidate.confidence)} • Suggested ${formatMoney(candidate.suggestedAmount)}`;
+                const allocatableLabel = candidate.isAllocatable ? "allocatable" : "not allocatable";
+                button.textContent = `Debt ${displayText(candidate.debtId)} • ${displayText(candidate.debt?.status)} • ${displayText(candidate.confidence)} • ${allocatableLabel} • Suggested ${formatMoney(candidate.suggestedAmount)}`;
 
                 button.addEventListener("click", () => {
                     candidateList.querySelectorAll(".candidate-item").forEach((row) => row.classList.remove("selected"));
@@ -245,29 +296,32 @@ if (typeof document !== "undefined") {
             ]);
 
             renderDetailsList(debtorInfo, [
-                ["debtorId", selectedCandidate?.debtorId || selectedDebt?.debtorId],
-                ["debtorType", selectedDebtor?.debtorType],
-                ["firstName", selectedDebtor?.firstName],
-                ["lastName", selectedDebtor?.lastName],
-                ["enterpriseName", selectedDebtor?.enterpriseName],
-                [fullNationalNumberVisible ? "full nationalNumber" : "masked nationalNumber", displayedNationalNumber],
+                ["debtorId", selectedCandidate?.debtorId || selectedDebt?.debtorId || selectedDebtor?.id],
+                ["type", selectedDebtor?.type],
+                ["displayName", selectedDebtor?.displayName],
+                ["nationalNumber", selectedDebtor?.nationalNumber],
                 ["enterpriseNumber", selectedDebtor?.enterpriseNumber],
-                ["address", formatAddress(selectedDebtor?.address)],
-                ["status", selectedDebtor?.status]
+                [fullNationalNumberVisible ? "full nationalNumber" : "masked nationalNumber", displayedNationalNumber],
+                ["active", selectedDebtor?.active],
+                ["createdAt", formatDateTime(selectedDebtor?.createdAt)]
             ]);
 
             renderDetailsList(debtInfo, [
                 ["debtId", selectedDebt?.id || selectedCandidate?.debtId],
-                ["debtReference", selectedDebt?.debtReference],
-                ["debtType", selectedDebt?.debtType],
+                ["debtorId", selectedDebt?.debtorId || selectedCandidate?.debtorId],
+                ["reference", selectedDebt?.reference],
                 ["originalAmount", formatMoney(selectedDebt?.originalAmount, selectedDebt?.currency || "EUR")],
                 ["remainingAmount", formatMoney(selectedDebt?.remainingAmount, selectedDebt?.currency || "EUR")],
                 ["currency", selectedDebt?.currency],
                 ["dueDate", selectedDebt?.dueDate],
                 ["status", selectedDebt?.status],
-                ["legalStatus", selectedDebt?.legalStatus],
-                ["structuredCommunication", selectedDebt?.structuredCommunication]
+                ["structuredCommunication", selectedDebt?.structuredCommunication],
+                ["freeCommunication", selectedDebt?.freeCommunication]
             ]);
+
+            if (selectedCandidate && !selectedCandidate.isAllocatable) {
+                setBanner(banner, "warning", "Candidate details are visible, but this debt cannot be validated or selected because its status is not allocatable.");
+            }
         }
 
         function displayValue(value) {
@@ -463,6 +517,7 @@ if (typeof module !== "undefined" && module.exports) {
         isStatusAllocatable,
         isValidAllocationAmount,
         normalizeCandidate,
-        enrichCandidatesFromData
+        enrichCandidatesFromData,
+        selectInitialCandidate
     };
 }

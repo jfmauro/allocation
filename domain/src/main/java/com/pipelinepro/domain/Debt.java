@@ -78,6 +78,10 @@ public final class Debt {
         return reference;
     }
 
+    public BigDecimal originalAmount() {
+        return originalAmount;
+    }
+
     public BigDecimal remainingAmount() {
         return remainingAmount;
     }

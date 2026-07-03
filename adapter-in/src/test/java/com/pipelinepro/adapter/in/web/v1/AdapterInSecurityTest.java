@@ -10,6 +10,7 @@ import com.pipelinepro.domain.port.in.GetProposalCandidatesUseCase;
 import com.pipelinepro.domain.port.in.GetProposalDetailUseCase;
 import com.pipelinepro.domain.port.in.ProposalLifecycleUseCase;
 import com.pipelinepro.domain.port.in.QueryDebtUseCase;
+import com.pipelinepro.domain.port.in.QueryDebtorUseCase;
 import com.pipelinepro.domain.port.in.QueryPaymentUseCase;
 import com.pipelinepro.domain.port.in.ReceivePaymentUseCase;
 import org.junit.jupiter.api.Test;
@@ -58,6 +59,9 @@ class AdapterInSecurityTest {
 
     @MockitoBean
     private QueryDebtUseCase queryDebtUseCase;
+
+    @MockitoBean
+    private QueryDebtorUseCase queryDebtorUseCase;
 
     @MockitoBean
     private CreateDebtIntakeUseCase createDebtIntakeUseCase;

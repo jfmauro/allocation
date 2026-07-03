@@ -12,6 +12,8 @@ import com.pipelinepro.domain.ProposalStatus;
 import com.pipelinepro.domain.port.in.GetProposalCandidatesUseCase;
 import com.pipelinepro.domain.port.in.GetProposalDetailUseCase;
 import com.pipelinepro.domain.port.in.ProposalLifecycleUseCase;
+import com.pipelinepro.domain.port.in.QueryDebtUseCase;
+import com.pipelinepro.domain.port.in.QueryDebtorUseCase;
 import com.pipelinepro.domain.port.in.command.MarkUnmatchedCommand;
 import com.pipelinepro.domain.port.in.command.RejectProposalCommand;
 import com.pipelinepro.domain.port.in.command.RequestInvestigationCommand;
@@ -57,6 +59,12 @@ class AllocationProposalControllerWebMvcTest {
     private GetProposalCandidatesUseCase getProposalCandidatesUseCase;
 
     @MockitoBean
+    private QueryDebtUseCase queryDebtUseCase;
+
+    @MockitoBean
+    private QueryDebtorUseCase queryDebtorUseCase;
+
+    @MockitoBean
     private ProposalWebMapper proposalWebMapper;
 
     @Test
@@ -83,14 +91,16 @@ class AllocationProposalControllerWebMvcTest {
                         UUID.randomUUID(),
                         com.pipelinepro.domain.MatchConfidence.HIGH,
                         new BigDecimal("10.00"),
-                        0)),
+                        0,
+                        null,
+                        null)),
                 0L,
                 Instant.parse("2026-06-01T10:00:00Z"),
                 Instant.parse("2026-06-01T10:00:00Z"));
 
         when(getProposalDetailUseCase.getProposal(proposalId)).thenReturn(Optional.of(proposal));
         when(getProposalCandidatesUseCase.listCandidates(proposalId)).thenReturn(List.of());
-        when(proposalWebMapper.toAllocationProposalResponse(any(), anyList())).thenReturn(response);
+        when(proposalWebMapper.toAllocationProposalResponseWithCandidateResponses(any(), anyList())).thenReturn(response);
 
         mockMvc.perform(get("/allocation-proposals/{proposalId}", proposalId))
                 .andExpect(status().isOk())

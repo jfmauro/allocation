@@ -56,6 +56,15 @@ test("proposal candidates are normalized and allocatable status is enforced", ()
     assert.equal(proposalsValidate.isStatusAllocatable(""), false);
 });
 
+test("proposal validate screen selects visible candidates regardless of allocatable status", () => {
+    const selected = proposalsValidate.selectInitialCandidate([
+        { debtId: "d1", debt: { id: "d1", status: "CLOSED" }, isAllocatable: false },
+        { debtId: "d2", debt: { id: "d2", status: "OPEN" }, isAllocatable: true }
+    ]);
+
+    assert.equal(selected.debtId, "d1");
+});
+
 test("validation amount must be positive and within payment remaining amount", () => {
     assert.equal(proposalsValidate.isValidAllocationAmount(0, 100), false);
     assert.equal(proposalsValidate.isValidAllocationAmount(50, 40), false);
